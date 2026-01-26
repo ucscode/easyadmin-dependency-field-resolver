@@ -1,0 +1,27 @@
+{
+    "name": "ucscode/easyadmin-dependency-field-resolver",
+    "description": "A state-aware dependency resolver for EasyAdmin fields that handles complex field dependencies via a redirect-and-bridge mechanism to prevent Symfony validation type mismatches.",
+    "type": "symfony-bundle",
+    "require": {
+        "php": ">=8.1",
+        "symfony/framework-bundle": "^7.4",
+        "easycorp/easyadmin-bundle": "^4.0"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Ucscode\\EasyAdmin\\FieldDependencyResolver\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ucscode",
+            "email": "uche23mail@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "phpstan/phpstan": "^2.1"
+    }
+}
