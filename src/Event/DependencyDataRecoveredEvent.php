@@ -1,10 +1,10 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Event;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\Form\FormInterface;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Dto\DataDto;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
 
 class DependencyDataRecoveredEvent
 {

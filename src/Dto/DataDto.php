@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Dto;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Dto;
 
 class DataDto
 {

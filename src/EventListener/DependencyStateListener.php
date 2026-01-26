@@ -1,15 +1,15 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\EventListener;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\EventListener;
 
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Dto\DataDto;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Event\DependencyChangedEvent;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Service\DependencyFieldResolver;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Service\ResolverDataBridge;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyChangedEvent;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Service\DependencyFieldResolver;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Service\ResolverDataBridge;
 
 class DependencyStateListener implements EventSubscriberInterface
 {

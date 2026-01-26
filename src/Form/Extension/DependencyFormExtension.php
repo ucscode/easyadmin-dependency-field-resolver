@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Form\Extension;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Form\Extension;
 
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -11,10 +11,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Dto\DataDto;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Event\DependencyDataRecoveredEvent as EventDependencyDataRecoveredEvent;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Event\DependencyFieldRehydrateEvent;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Service\ResolverDataBridge;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyDataRecoveredEvent as EventDependencyDataRecoveredEvent;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyFieldRehydrateEvent;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Service\ResolverDataBridge;
 
 class DependencyFormExtension extends AbstractTypeExtension
 {

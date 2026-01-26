@@ -1,9 +1,9 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Event;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Dto\DataDto;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
 
 class PreCreateStateEvent extends Event
 {

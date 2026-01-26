@@ -2,7 +2,7 @@ Here is a comprehensive `README.md` for your library. It covers the architecture
 
 ---
 
-# EasyAdmin Field Dependency Resolver
+# EasyAdmin Dependency Field Resolver
 
 A powerful, event-driven Symfony bundle for **EasyAdmin 4** that allows fields to dynamically appear, disappear, or change their data based on the values of other fields.
 
@@ -21,7 +21,7 @@ Unlike standard EasyAdmin dynamic forms, this library uses a **Redirect & Recove
 ## Installation
 
 ```bash
-composer require ucscode/easyadmin-field-dependency-resolver
+composer require ucscode/easyadmin-dependency-field-resolver
 ```
 
 ---
@@ -30,32 +30,43 @@ composer require ucscode/easyadmin-field-dependency-resolver
 
 ### 1. The Controller Setup
 
-Inject the `FieldDependencyResolver` into your CRUD Controller and use it within your `configureFields` method.
+Inject the `DependencyFieldResolver` into your CRUD Controller and use it within your `configureFields` method.
 
 ```php
-use Ucscode\EasyAdmin\FieldDependencyResolver\Service\FieldDependencyResolver;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Service\DependencyFieldResolver;
 
 class UserCrudController extends AbstractCrudController
 {
     public function __construct(
-        private FieldDependencyResolver $resolver
+        private DependencyFieldResolver $resolver
     ) {}
 
     public function configureFields(string $pageName): iterable
     {
         return $this->resolver
-            ->configureFields(fn() => [
-                TextField::new('username'),
-                ChoiceField::new('type')->setChoices([
-                    'Individual' => 'individual',
-                    'Organization' => 'org',
-                ]),
-            ])
-            ->dependsOn('type', function(array $values) {
-                // This only runs if 'type' is not null
+            ->configureFields(function(): iterable {
+                // Do exactly the same thing you would do in `configureFields()` of your crud controller
+                // You can return an array or use `yield` to return a Generator
+                // However, you should only return *INDEPENDENT* Fields
+                yield TextField::new('username');
+
+                yield ChoiceField::new('type')
+                    ->setChoices([
+                        'Individual' => 'individual',
+                        'Organization' => 'org',
+                    ]);
+            })
+            ->dependsOn('type', function(array $values): iterable {
+                // This Closure will only run if 'type' is not null
                 if ($values['type'] === 'org') {
                     yield TextField::new('companyName');
                     yield AssociationField::new('industry');
+                }
+            })
+            ->dependsOn(['type', 'username'], function(array $values) use ($pageName): iterable {
+                // This Closure will only run if both 'type' and 'username' are not null
+                if ($values['username'] == 'joe') {
+                    yield $values['type'] == 'org' ? TextField::new('website') : ChoiceField::new(...);
                 }
             })
             ->resolve();
@@ -72,7 +83,7 @@ This library operates entirely on the server side by hijacking the Symfony Form 
 
 ### 1. State Encapsulation
 
-The `FieldDependencyResolver` generates a `HiddenField` named `__resolver_state`. This field contains a JSON-encoded snapshot of the "monitored parents" at the time the form was rendered.
+The `DependencyFieldResolver` generates a `HiddenField` named `__resolver_state`. This field contains an unmapped JSON-encoded snapshot of the "monitored parents" at the time the form was rendered.
 
 ### 2. Difference Detection
 
@@ -95,7 +106,7 @@ On the subsequent GET request:
 
 1. The `DependencyFormExtension` detects data in the `ResolverDataBridge`.
 2. It injects this data back into the form fields, ensuring `EntityType` fields have their choices correctly populated.
-3. The `FieldDependencyResolver` runs its closures. Since the parent values are now present in the Bridge, the dependent fields are **yielded** and rendered in the UI.
+3. The `DependencyFieldResolver` runs its closures. Since the parent values are now present in the Bridge, the dependent fields are **yielded** and rendered in the UI.
 
 ---
 
@@ -103,7 +114,7 @@ On the subsequent GET request:
 
 | Component | Responsibility |
 | --- | --- |
-| **`FieldDependencyResolver`** | Defines dependencies and yields fields based on available data. |
+| **`DependencyFieldResolver`** | Defines dependencies and yields fields based on available data. |
 | **`DependencyStateListener`** | Compares POST vs. Hidden State; triggers the redirect. |
 | **`ResolverDataBridge`** | Acts as temporary storage for form data across the redirect. |
 | **`DependencyFormExtension`** | Reconstructs the form state from the Bridge during the GET request. |
@@ -125,7 +136,7 @@ You can modify the data during the transition using the `DependencyChangedEvent`
 ### Create a Subscriber
 
 ```php
-use Ucscode\EasyAdmin\FieldDependencyResolver\Event\DependencyChangedEvent;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyChangedEvent;
 
 class DependencySubscriber implements EventSubscriberInterface
 {
@@ -157,7 +168,7 @@ If you are extending this library, ensure your namespaces align with the followi
 
 | Namespace | Role |
 | --- | --- |
-| `..\Service` | `FieldDependencyResolver`, `ResolverDataBridge` |
+| `..\Service` | `DependencyFieldResolver`, `ResolverDataBridge` |
 | `..\Event` | `DependencyChangedEvent`, `PostFieldInflationEvent` |
 | `..\EventListener` | `DependencyStateListener` |
 | `..\Form\Extension` | `DependencyFormExtension` |

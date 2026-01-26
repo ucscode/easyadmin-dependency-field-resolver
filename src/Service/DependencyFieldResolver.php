@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Service;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Service;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
@@ -142,7 +142,7 @@ class DependencyFieldResolver
 
         return HiddenField::new(self::RESOLVER_STATE)
             ->setFormTypeOptions([
-                'data' => json_encode($state),
+                'data' => base64_encode(json_encode($state)),
                 'mapped' => false,
             ])
             ->onlyOnForms();

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Event;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use Symfony\Contracts\EventDispatcher\Event;

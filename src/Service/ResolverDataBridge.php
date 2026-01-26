@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Service;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Service;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 

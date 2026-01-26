@@ -1,11 +1,11 @@
 <?php
 
-namespace Ucscode\EasyAdmin\FieldDependencyResolver\Event;
+namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\EventDispatcher\Event;
-use Ucscode\EasyAdmin\FieldDependencyResolver\Dto\DataDto;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
 
 class DependencyChangedEvent extends Event
 {
