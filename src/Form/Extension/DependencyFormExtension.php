@@ -12,7 +12,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
-use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyDataRecoveredEvent as EventDependencyDataRecoveredEvent;
+use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyDataRecoveredEvent;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyFieldRehydrateEvent;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Service\ResolverDataBridge;
 
@@ -53,7 +53,7 @@ class DependencyFormExtension extends AbstractTypeExtension
             $form = $event->getForm();
             $postDataDto = new DataDto($this->bridge->getData());
 
-            $this->eventDispatcher->dispatch(new EventDependencyDataRecoveredEvent(
+            $this->eventDispatcher->dispatch(new DependencyDataRecoveredEvent(
                 $adminContext,
                 $form,
                 $postDataDto

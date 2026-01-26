@@ -4,8 +4,9 @@ namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
-class DependencyFieldRehydrateEvent
+class DependencyFieldRehydrateEvent extends Event
 {
     public function __construct(
         private AdminContext $context,

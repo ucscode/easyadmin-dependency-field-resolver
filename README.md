@@ -1,10 +1,6 @@
-Here is a comprehensive `README.md` for your library. It covers the architecture, the "Gatekeeper" logic, and how to implement it in an EasyAdmin project.
-
----
-
 # EasyAdmin Dependency Field Resolver
 
-A powerful, event-driven Symfony bundle for **EasyAdmin 4** that allows fields to dynamically appear, disappear, or change their data based on the values of other fields.
+A lightweight, event-driven Symfony bundle for **EasyAdmin 4** that allows fields to dynamically appear, disappear, or change their data based on the values of other fields.
 
 Unlike standard EasyAdmin dynamic forms, this library uses a **Redirect & Recovery** strategy. This ensures that even complex fields (like Autocomplete Entity types) are correctly re-initialized with full Doctrine support after a dependency change.
 
@@ -65,9 +61,12 @@ class UserCrudController extends AbstractCrudController
             })
             ->dependsOn(['type', 'username'], function(array $values) use ($pageName): iterable {
                 // This Closure will only run if both 'type' and 'username' are not null
-                if ($values['username'] == 'joe') {
-                    yield $values['type'] == 'org' ? TextField::new('website') : ChoiceField::new(...);
+                if ($values['username'] == 'joe' && $values['type'] == 'org') {
+                    yield TextField::new('website');
+                    return;
                 }
+                
+                yield ChoiceField::new(...);
             })
             ->resolve();
     }
@@ -83,7 +82,7 @@ This library operates entirely on the server side by hijacking the Symfony Form 
 
 ### 1. State Encapsulation
 
-The `DependencyFieldResolver` generates a `HiddenField` named `__resolver_state`. This field contains an unmapped JSON-encoded snapshot of the "monitored parents" at the time the form was rendered.
+The `DependencyFieldResolver` generates a `HiddenField` named `__resolver_state`. This field contains an unmapped base64-encoded snapshot of the "monitored parents" at the time the form was rendered.
 
 ### 2. Difference Detection
 
@@ -98,7 +97,7 @@ If a difference is detected in any monitored field:
 
 1. The listener **intercepts** the request before the Controller can persist the data.
 2. The current POST data is stored in the `ResolverDataBridge` (Session).
-3. A `RedirectResponse` is issued to the same URL (GET request) which evades the submission.
+3. A `RedirectResponse` is issued to the same URL (GET request) to prevent false validation error message.
 
 ### 4. Data Recovery & Dynamic Yielding
 
@@ -118,14 +117,6 @@ On the subsequent GET request:
 | **`DependencyStateListener`** | Compares POST vs. Hidden State; triggers the redirect. |
 | **`ResolverDataBridge`** | Acts as temporary storage for form data across the redirect. |
 | **`DependencyFormExtension`** | Reconstructs the form state from the Bridge during the GET request. |
-
----
-
-## Advantages of this Approach
-
-* **No Custom JavaScript:** Works with EasyAdmin's native behavior without needing to maintain JS assets.
-* **Validation Friendly:** Since the form reloads, Symfony's validation and EasyAdmin's `Autocomplete` subscribers run naturally.
-* **Complex Dependencies:** Allows for multi-level dependencies (e.g., Country -> State -> City) because each step re-evaluates the entire form.
 
 ---
 
@@ -162,34 +153,98 @@ class DependencySubscriber implements EventSubscriberInterface
 
 ---
 
-## Architecture Checklist
+## 1. Event System & Usage Examples
 
-If you are extending this library, ensure your namespaces align with the following structure:
+The library dispatches several events throughout the **Detection → Redirect → Recovery** lifecycle. These allow you to hook into the data flow to modify values, inject metadata, or manipulate fields dynamically.
 
-| Namespace | Role |
-| --- | --- |
-| `..\Service` | `DependencyFieldResolver`, `ResolverDataBridge` |
-| `..\Event` | `DependencyChangedEvent`, `PostFieldInflationEvent` |
-| `..\EventListener` | `DependencyStateListener` |
-| `..\Form\Extension` | `DependencyFormExtension` |
+### `DependencyChangedEvent`
+
+**Location:** Dispatched by the `DependencyStateListener` when it detects a change in a monitored parent field, just before the redirect.  
+**Usage:** Sanitize or "reset" dependent data.
+
+```php
+public function onDependencyChange(DependencyChangedEvent $event): void
+{
+    $data = $event->getPostData(); // The ResolverPostData DTO
+
+    // If 'country' changed, clear 'state' so old data doesn't persist
+    if ($data->has('country')) {
+        $data->set('state', null);
+    }
+}
+
+```
+
+### `DependencyDataRecoveredEvent`
+
+**Location:** Dispatched in the `FormExtension` when data is successfully pulled from the Bridge (Session).  
+**Usage:** Logging or performing global transformations on the recovered dataset.
+
+### `DependencyFieldRehydrateEvent`
+
+**Location:** Dispatched for every individual field during the recovery phase.  
+**Usage:** This is the primary hook for custom "inflation." If you have a non-entity field (like a JSON object or a File) that needs special handling, do it here.
 
 ---
 
-## Standalone Quality Sniffing
+## Handling Field Requirements
 
-To verify the library's integrity without a full Symfony app, use the following tools:
+When building dynamic forms, you may want certain dependent fields to be mandatory. While your first instinct might be to use `setRequired(true)`, there is a more flexible approach using Symfony Constraints that provides a better experience during the "Redirect & Recovery" phase.
 
-```bash
-# Static Analysis
-vendor/bin/phpstan analyze src
+### The Recommendation
 
-# Coding Standards
-vendor/bin/php-cs-fixer fix src --dry-run
+For fields yielded inside a `dependsOn` closure, I recommend setting `setRequired(false)` and enforcing the requirement via **Symfony Constraints** (e.g., `NotBlank`).
 
-# Dependency Validation
-vendor/bin/deptrac
+### Why this is suggested
+
+When a field is marked as `required` at the form level, EasyAdmin's internal pre-validation often block the form submission if that field is empty.
+
+In a dependency flow, if a user changes a "parent" field but a previously required "child" field is now empty, the form might trigger a validation error immediately. By using constraints instead of the `required` flag, you allow the library to smoothly intercept the data and perform the redirect without the browser or the server's initial validation layer getting in the way.
+
+### An Example
+
+Let's assume you mark a dependent field **state** as `required` and the field depends on a **country**. This might create a "deadlock":
+
+1. User selects **United States** and submits.
+2. **State** field appears and is marked `required`.
+3. User realizes they meant **United Kingdom** and changes the **Country** field.
+4. User clicks "Submit".
+5. **Validation Fails:** EasyAdmin sees the **State** field is empty but required. 
+6. The form refuses to submit.
+
+### The Recommended Solution
+
+Set field to `required == false` and use **Symfony Constraints** with **Validation Groups** (or simple conditional constraints) to enforce the "required" state.
+
+#### Example Implementation
+
+In this example, the `state` field is logically required, but we handle that requirement through a constraint to ensure the "Redirect & Recovery" cycle remains fluid.
+
+```php
+->configureFields(function() {
+    yield CountryField::new('country');
+})
+->dependsOn('country', function(array $values) {
+    yield ChoiceField::new('state')
+        // Use false to ensure the form can always submit for state-tracking
+        ->setRequired(false) 
+        ->setFormTypeOptions([
+            'constraints' => [
+                // Use a constraint to ensure the data is valid upon final save
+                new NotBlank([
+                    'message' => 'Please select a state for ' . $values['country'],
+                ])
+            ]
+        ]);
+})
 
 ```
+
+### Benefits of this approach
+
+* **Smoother Transitions:** Users can switch parent values without being "trapped" by browser-level validation tooltips on child fields that are about to change anyway.
+* **Reliable State Tracking:** Ensures the `DependencyStateListener` always receives the POST data it needs to calculate the next state.
+* **Full Validation:** Your data integrity remains intact; Symfony will still prevent a final save to the database if the `NotBlank` constraint is not met.
 
 ---
 

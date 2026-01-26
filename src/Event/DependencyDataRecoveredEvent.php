@@ -4,9 +4,10 @@ namespace Ucscode\EasyAdmin\DependencyFieldResolver\Event;
 
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
 
-class DependencyDataRecoveredEvent
+class DependencyDataRecoveredEvent extends Event
 {
     public function __construct(
         private AdminContext $adminContext,

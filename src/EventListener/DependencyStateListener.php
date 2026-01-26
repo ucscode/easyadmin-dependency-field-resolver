@@ -46,25 +46,29 @@ class DependencyStateListener implements EventSubscriberInterface
             return;
         }
 
-        $renderedState = json_decode($encodedState, true);
+        $renderedState = json_decode(base64_decode($encodedState), true);
         if (!is_array($renderedState)) {
             return;
         }
 
-        // Compare the "Rendered" state with the "Current" submitted values
         if ($this->hasStateChanged($renderedState, $postData)) {
-            // Create PostDataDto
+            // 1. Prepare Data & Response
             $postDataDto = new DataDto($postData);
-
             $response = new RedirectResponse($request->getUri());
+
+            // 2. Initialize Event
             $stateEvent = new DependencyChangedEvent($context, $postDataDto, $response);
 
+            // 3. Dispatch (New Signature)
+            // Listeners can now modify $postDataDto or the $response object inside $stateEvent
             $this->eventDispatcher->dispatch($stateEvent);
-            // 1. Capture the data into our Bridge (Session)
-            $this->bridge->persist($postDataDto->all());
 
-            // 2. Redirect back to the same page
-            // This prevents Symfony from validating the mismatched form
+            // 4. Capture the (potentially modified) data into our Bridge
+            $this->bridge->persist($stateEvent->getPostData()->all());
+
+            // 5. Apply the final Response
+            // We pull the response from the EVENT, not the local variable, 
+            // in case a listener called $event->setResponse(...)
             $event->setResponse($stateEvent->getResponse());
         }
     }
