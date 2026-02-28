@@ -39,18 +39,6 @@ class ResolverDataBridge
         $this->data = [];
     }
 
-    public function persist(array $data): void
-    {
-        $this->requestStack->getSession()->set(self::SESSION_KEY, $data);
-    }
-
-    public function get(string $key, mixed $default = null): mixed
-    {
-        $this->loadData();
-
-        return $this->data[$key] ?? $default;
-    }
-
     public function getData(): array
     {
         return $this->data;
@@ -61,5 +49,17 @@ class ResolverDataBridge
         $this->loadData();
 
         return !empty($this->data);
+    }
+
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $this->loadData();
+
+        return $this->data[$key] ?? $default;
+    }
+
+    public function persist(array $data): void
+    {
+        $this->requestStack->getSession()->set(self::SESSION_KEY, $data);
     }
 }

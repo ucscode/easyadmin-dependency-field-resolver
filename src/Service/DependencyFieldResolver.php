@@ -40,7 +40,7 @@ class DependencyFieldResolver
     public function configureFields(\Closure $closure): self
     {
         $this->independentFields = iterator_to_array($closure());
-        
+
         return $this;
     }
 
@@ -140,12 +140,14 @@ class DependencyFieldResolver
             $state[$parent] = $this->getValue($parent);
         }
 
-        return HiddenField::new(self::RESOLVER_STATE)
+        $field = HiddenField::new(self::RESOLVER_STATE)
             ->setFormTypeOptions([
                 'data' => base64_encode(json_encode($state)),
                 'mapped' => false,
             ])
             ->onlyOnForms();
+
+        return $field;
     }
 
     private function getAdminContext(): ?AdminContextInterface

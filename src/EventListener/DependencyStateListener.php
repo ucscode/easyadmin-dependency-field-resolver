@@ -6,6 +6,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Dto\DataDto;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Event\DependencyChangedEvent;
 use Ucscode\EasyAdmin\DependencyFieldResolver\Service\DependencyFieldResolver;
@@ -54,7 +55,7 @@ class DependencyStateListener implements EventSubscriberInterface
         if ($this->hasStateChanged($renderedState, $postData)) {
             // 1. Prepare Data & Response
             $postDataDto = new DataDto($postData);
-            $response = new RedirectResponse($request->getUri());
+            $response = new RedirectResponse($request->getUri(), Response::HTTP_SEE_OTHER);
 
             // 2. Initialize Event
             $stateEvent = new DependencyChangedEvent($context, $postDataDto, $response);
@@ -67,7 +68,7 @@ class DependencyStateListener implements EventSubscriberInterface
             $this->bridge->persist($stateEvent->getPostData()->all());
 
             // 5. Apply the final Response
-            // We pull the response from the EVENT, not the local variable, 
+            // We pull the response from the EVENT, not the local variable,
             // in case a listener called $event->setResponse(...)
             $event->setResponse($stateEvent->getResponse());
         }
