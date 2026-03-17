@@ -4,6 +4,12 @@ A lightweight, event-driven Symfony bundle for **EasyAdmin 4** that allows field
 
 Unlike standard EasyAdmin dynamic forms, this library uses a **Redirect & Recovery** strategy. This ensures that even complex fields (like Autocomplete Entity types) are correctly re-initialized with full Doctrine support after a dependency change.
 
+---
+
+### Wait...! You might prefer using the [SymfonyCast Dynamic Form Builder](https://github.com/SymfonyCasts/dynamic-forms) instead
+
+---
+
 ## Features
 
 * **Closure-based logic:** Define dependencies using simple PHP closures.
