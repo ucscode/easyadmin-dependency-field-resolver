@@ -6,10 +6,6 @@ Unlike standard EasyAdmin dynamic forms, this library uses a **Redirect & Recove
 
 ---
 
-### Wait...! You might prefer using the [SymfonyCast Dynamic Form Builder](https://github.com/SymfonyCasts/dynamic-forms) instead
-
----
-
 ## Features
 
 * **Closure-based logic:** Define dependencies using simple PHP closures.
